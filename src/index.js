@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import { authMiddleware } from "./middleware/authMiddleware.js";
 import { initSupabase } from "./utils/supabase.js";
 import { pingRouter } from "./routes/pingRoute.js";
+import fetch from 'node-fetch';
 
 dotenv.config();
 
@@ -24,15 +25,26 @@ app.get("/ping", (_, res) => {
 app.get("/top-headlines", async (req, res) => {
   const url = 'https://newsapi.org/v2/top-headlines?country=us&apiKey=aa5b5a9486af4d338af4a12821a90ac9';
 
-  const urlResponse = await fetch(url);
-  const jsonUrlResponse = await urlResponse.json()
+  try {
+    const urlResponse = await fetch(url);
 
-  if (jsonUrlResponse.status === 'ok') {
-    return res.json({ "data": jsonUrlResponse["articles"] }); // Send the entire articles array
-  } else {
-    res.status(500).json({ error: 'Failed to fetch top headlines' });
+    if (!urlResponse.ok) {
+      console.error('Error from News API:', urlResponse.status, await urlResponse.text());
+      return res.status(502).json({ error: 'Bad Gateway, failed to fetch headlines' });
+    }
+
+    const jsonUrlResponse = await urlResponse.json();
+    
+    if (jsonUrlResponse.status === 'ok') {
+      return res.json({ data: jsonUrlResponse["articles"] });
+    } else {
+      console.error('Error in response:', jsonUrlResponse);
+      return res.status(500).json({ error: 'Failed to fetch top headlines' });
+    }
+  } catch (error) {
+    console.error('Error fetching data from News API:', error);
+    return res.status(502).json({ error: 'Bad Gateway, failed to fetch headlines' });
   }
-
 });
 
 app.get("/article-by-category", async (req, res) => {
@@ -47,7 +59,7 @@ app.get("/article-by-category", async (req, res) => {
     const jsonUrlResponse = await response.json();
 
     if (jsonUrlResponse.status === 'ok') {
-      res.json({ data: jsonUrlResponse["articles"] }); // Send articles for the category
+      return res.json({ "data": jsonUrlResponse["articles"] }); // Send articles for the category
     } else {
       res.status(500).json({ error: `Failed to load ${category} articles` });
     }
@@ -70,7 +82,7 @@ app.get('/api/search-articles', async (req, res) => {
     const jsonResponse = await response.json();
 
     if (jsonResponse.status === 'ok') {
-      res.json({ data: jsonResponse["articles"] }); // Send articles from search
+      return res.json({ data: jsonResponse["articles"] }); // Send articles from search
     } else {
       res.status(500).json({ error: 'Failed to search articles' });
     }
