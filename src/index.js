@@ -21,13 +21,63 @@ app.get("/ping", (_, res) => {
   res.json({ message: "pong" });
 });
 
-app.get("/details", async (req, res) => {
+app.get("/top-headlines", async (req, res) => {
   const url = 'https://newsapi.org/v2/top-headlines?country=us&apiKey=aa5b5a9486af4d338af4a12821a90ac9';
 
   const urlResponse = await fetch(url);
   const jsonUrlResponse = await urlResponse.json()
 
-  return res.json({ "data": jsonUrlResponse["articles"][0] });
+  if (jsonUrlResponse.status === 'ok') {
+    return res.json({ "data": jsonUrlResponse.articles }); // Send the entire articles array
+  } else {
+    res.status(500).json({ error: 'Failed to fetch top headlines' });
+  }
+
+});
+
+app.get("/article-by-category", async (req, res) => {
+  const category = req.query.category;
+  if (!category) {
+    return res.status(400).json({ error: 'Category parameter is required' });
+  }
+
+  try {
+    const url = `https://newsapi.org/v2/top-headlines?country=us&category=${encodeURIComponent(category)}&apiKey=aa5b5a9486af4d338af4a12821a90ac9`;
+    const response = await fetch(url);
+    const jsonUrlResponse = await response.json();
+
+    if (jsonUrlResponse.status === 'ok') {
+      res.json({ data: jsonUrlResponse.articles }); // Send articles for the category
+    } else {
+      res.status(500).json({ error: `Failed to load ${category} articles` });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// Search Articles
+app.get('/api/search-articles', async (req, res) => {
+  const query = req.query.query;
+  if (!query) {
+    return res.status(400).json({ error: 'Query parameter is required' });
+  }
+
+  try {
+    const url = `https://newsapi.org/v2/everything?q=${encodeURIComponent(query)}&apiKey=${API_KEY}`;
+    const response = await fetch(url);
+    const jsonResponse = await response.json();
+
+    if (jsonResponse.status === 'ok') {
+      res.json({ data: jsonResponse.articles }); // Send articles from search
+    } else {
+      res.status(500).json({ error: 'Failed to search articles' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
 });
 
 app.use(authMiddleware);
