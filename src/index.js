@@ -21,6 +21,15 @@ app.get("/ping", (_, res) => {
   res.json({ message: "pong" });
 });
 
+app.get("/details", async (req, res) => {
+  const url = 'https://newsapi.org/v2/top-headlines?country=us&apiKey=aa5b5a9486af4d338af4a12821a90ac9';
+
+  const urlResponse = await fetch(url);
+  const jsonUrlResponse = await urlResponse.json()
+
+  return res.json({ "data": jsonUrlResponse["articles"][0] });
+});
+
 app.use(authMiddleware);
 
 // add routers to the app
