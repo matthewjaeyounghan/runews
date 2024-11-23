@@ -17,7 +17,8 @@ export function initSupabase() {
     if (!supabase) {
       supabase = createClient(
         process.env.SUPABASE_URL,
-        process.env.SUPABASE_SERVICE_KEY
+        process.env.SUPABASE_SERVICE_KEY,
+        process.env.NEWS_API_KEY
       );
       console.log("Supabase client initialized successfully.");
     }

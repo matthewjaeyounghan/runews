@@ -23,7 +23,13 @@ app.get("/ping", (_, res) => {
 });
 
 app.get("/top-headlines", async (req, res) => {
-  const url = 'https://newsapi.org/v2/top-headlines?country=us&apiKey=aa5b5a9486af4d338af4a12821a90ac9';
+  const url = new URL('https://newsapi.org/v2/top-headlines');
+  const params = {
+    country: 'us',
+    apiKey: process.env.NEWS_API_KEY,
+  };
+  
+  Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
 
   try {
     const urlResponse = await fetch(url);
