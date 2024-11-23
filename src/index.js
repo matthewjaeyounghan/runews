@@ -22,29 +22,43 @@ app.get("/ping", (_, res) => {
   res.json({ message: "pong" });
 });
 
+
 app.get("/top-headlines", async (req, res) => {
-  const url = new URL('https://newsapi.org/v2/top-headlines');
+  const apiKey = process.env.NEWS_API_KEY; // Make sure your API key is set in the environment variable
+  
+  if (!apiKey) {
+    return res.status(500).json({ error: 'API key is missing' });
+  }
+
+  const url = 'https://newsapi.org/v2/top-headlines';
   const params = {
     country: 'us',
-    apiKey: process.env.NEWS_API_KEY,
+    pageSize: 5,
   };
-  
-  Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
+
+  // Create URL with query parameters
+  const urlWithParams = new URL(url);
+  Object.keys(params).forEach(key => urlWithParams.searchParams.append(key, params[key]));
 
   try {
-    const urlResponse = await fetch(url);
+    const response = await fetch(urlWithParams, {
+      method: 'GET',
+      headers: {
+        'X-Api-Key': apiKey,  // Include API key in the header
+      },
+    });
 
-    if (!urlResponse.ok) {
-      console.error('Error from News API:', urlResponse.status, await urlResponse.text());
+    if (!response.ok) {
+      console.error('Error from News API:', response.status, await response.text());
       return res.status(502).json({ error: 'Bad Gateway, failed to fetch headlines' });
     }
 
-    const jsonUrlResponse = await urlResponse.json();
-    
-    if (jsonUrlResponse.status === 'ok') {
-      return res.json({ data: jsonUrlResponse["articles"] });
+    const data = await response.json();
+
+    if (data.status === 'ok') {
+      return res.json({ data: data.articles });
     } else {
-      console.error('Error in response:', jsonUrlResponse);
+      console.error('Error in response:', data);
       return res.status(500).json({ error: 'Failed to fetch top headlines' });
     }
   } catch (error) {
