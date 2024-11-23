@@ -5,6 +5,7 @@ import { authMiddleware } from "./middleware/authMiddleware.js";
 import { initSupabase } from "./utils/supabase.js";
 import { pingRouter } from "./routes/pingRoute.js";
 import fetch from 'node-fetch';
+const NEWS_API_KEY = process.env.NEWS_API_KEY;
 
 dotenv.config();
 
@@ -47,6 +48,8 @@ app.get("/top-headlines", async (req, res) => {
         'X-Api-Key': apiKey,  // Include API key in the header
       },
     });
+    const responseBody = await response.json();
+    res.send(responseBody);
 
     if (!response.ok) {
       console.error('Error from News API:', response.status, await response.text());
