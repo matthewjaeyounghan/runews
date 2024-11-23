@@ -28,7 +28,7 @@ app.get("/top-headlines", async (req, res) => {
   const jsonUrlResponse = await urlResponse.json()
 
   if (jsonUrlResponse.status === 'ok') {
-    return res.json({ "data": jsonUrlResponse.articles }); // Send the entire articles array
+    return res.json({ "data": jsonUrlResponse["articles"] }); // Send the entire articles array
   } else {
     res.status(500).json({ error: 'Failed to fetch top headlines' });
   }
@@ -47,7 +47,7 @@ app.get("/article-by-category", async (req, res) => {
     const jsonUrlResponse = await response.json();
 
     if (jsonUrlResponse.status === 'ok') {
-      res.json({ data: jsonUrlResponse.articles }); // Send articles for the category
+      res.json({ data: jsonUrlResponse["articles"] }); // Send articles for the category
     } else {
       res.status(500).json({ error: `Failed to load ${category} articles` });
     }
@@ -70,7 +70,7 @@ app.get('/api/search-articles', async (req, res) => {
     const jsonResponse = await response.json();
 
     if (jsonResponse.status === 'ok') {
-      res.json({ data: jsonResponse.articles }); // Send articles from search
+      res.json({ data: jsonResponse["articles"] }); // Send articles from search
     } else {
       res.status(500).json({ error: 'Failed to search articles' });
     }
